@@ -1,18 +1,18 @@
 import os
-import sys
 import json
 import yaml
 import base64
 import httplib
-from pprint import pprint
 from datetime import datetime
 from itertools import product
 from xml.dom.minidom import parseString
 
-def get_url(url, post_data = None):
+
+def get_url(url, post_data=None):
     # GitHub requires a valid UA string
     headers = {
-        'User-Agent' : 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0.5) Gecko/20120601 Firefox/10.0.5',
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0.5) \
+Gecko/20120601 Firefox/10.0.5',
     }
 
     # shortcut for GitHub API calls
@@ -20,7 +20,7 @@ def get_url(url, post_data = None):
         url = "https://api.github.com%s" % url
 
     if url.find('api.github.com') > -1:
-        if not os.environ.has_key("GITHUB_TOKEN"):
+        if "GITHUB_TOKEN" not in os.environ:
             raise Exception("Set the GITHUB_TOKEN variable")
         else:
             headers.update({
@@ -35,7 +35,6 @@ def get_url(url, post_data = None):
         conn = httplib.HTTPSConnection(host_port)
     else:
         conn = httplib.HTTPConnection(host_port)
-
 
     method = 'GET'
     if post_data:
@@ -54,6 +53,7 @@ def get_url(url, post_data = None):
     except ValueError:
         # not a JSON response
         return result
+
 
 def post_url(url, data):
     return get_url(url, data)
@@ -79,16 +79,17 @@ def monitor_pypi_rss(config):
             pub_date = item.getElementsByTagName("pubDate")[0]
 
             (name, version) = title.firstChild.wholeText.split(" ")
-            released_on = datetime.strptime(pub_date.firstChild.wholeText, '%d %b %Y %H:%M:%S GMT')
+            released_on = datetime.strptime(pub_date.firstChild.wholeText,
+                                            '%d %b %Y %H:%M:%S GMT')
 
             if name in config.keys():
                 for cfg in config[name]:
                     try:
                         args = cfg['args']
                         args.update({
-                            'name' : name,
-                            'version' : version,
-                            'released_on' : released_on
+                            'name': name,
+                            'version': version,
+                            'released_on': released_on,
                         })
 
                         # execute the call back
@@ -99,6 +100,7 @@ def monitor_pypi_rss(config):
         except Exception, e:
             print e
             continue
+
 
 def build_travis_env(travis, package, new_version):
     """
@@ -139,6 +141,7 @@ def calculate_new_travis_env(env_vars):
         new_env.append(' '.join(["%s=%s" % (k, v) for k, v in list(p)]))
     return new_env
 
+
 def update_travis(data, package, new_version):
     """
         Parses .travis.yml, builds a list of package==version
@@ -166,7 +169,7 @@ def update_github(**kwargs):
     """
         Update GitHub via API
     """
-    if not os.environ.has_key("GITHUB_TOKEN"):
+    if "GITHUB_TOKEN" not in os.environ:
         raise RuntimeError("Set the GITHUB_TOKEN variable")
 
     GITHUB_REPO = kwargs.get('GITHUB_REPO')
@@ -174,10 +177,11 @@ def update_github(**kwargs):
     GITHUB_FILE = kwargs.get('GITHUB_FILE')
 
     # step 1: Get a reference to HEAD
-    data = get_url("/repos/%s/git/refs/heads/%s" % (GITHUB_REPO, GITHUB_BRANCH))
+    data = get_url("/repos/%s/git/refs/heads/%s" %
+                   (GITHUB_REPO, GITHUB_BRANCH))
     HEAD = {
-        'sha' : data['object']['sha'],
-        'url' : data['object']['url'],
+        'sha': data['object']['sha'],
+        'url': data['object']['url'],
     }
 
     # step 2: Grab the commit that HEAD points to
@@ -189,40 +193,41 @@ def update_github(**kwargs):
             del data[key]
     HEAD['commit'] = data
 
-
     # step 4: Get a hold of the tree that the commit points to
     data = get_url(HEAD['commit']['tree']['url'])
-    HEAD['tree'] = { 'sha' : data['sha'] }
+    HEAD['tree'] = {'sha': data['sha']}
 
-    # intermediate step: get the latest content from GitHub and make an updated version
+    # intermediate step: get the latest content from GitHub
+    # and make an updated version of .travis.yml
     for obj in data['tree']:
         if obj['path'] == GITHUB_FILE:
-            data = get_url(obj['url']) # get the blob from the tree
+            data = get_url(obj['url'])  # get the blob from the tree
             data = base64.b64decode(data['content'])
             break
 
     old_travis = data.rstrip()
-    new_travis = update_travis(old_travis, kwargs.get('name'), kwargs.get('version'))
+    new_travis = update_travis(old_travis,
+                               kwargs.get('name'),
+                               kwargs.get('version'))
 
     # bail out if nothing changed
     if new_travis == old_travis:
         print "new == old, bailing out", kwargs
         return
 
-
-    ####
-    #### WARNING WRITE OPERATIONS BELOW
-    ####
+    # ------------------------------------
+    # !!! WARNING WRITE OPERATIONS BELOW
+    # ------------------------------------
 
     # step 3: Post your new file to the server
     data = post_url(
                 "/repos/%s/git/blobs" % GITHUB_REPO,
                 {
-                    'content' : new_travis,
-                    'encoding' : 'utf-8'
+                    'content': new_travis,
+                    'encoding': 'utf-8'
                 }
             )
-    HEAD['UPDATE'] = { 'sha' : data['sha'] }
+    HEAD['UPDATE'] = {'sha': data['sha']}
 
     # step 5: Create a tree containing your new file
     data = post_url(
@@ -237,18 +242,19 @@ def update_github(**kwargs):
                     }]
                 }
             )
-    HEAD['UPDATE']['tree'] = { 'sha' : data['sha'] }
+    HEAD['UPDATE']['tree'] = {'sha': data['sha']}
 
     # step 6: Create a new commit
     data = post_url(
                 "/repos/%s/git/commits" % GITHUB_REPO,
                 {
-                    "message": "New upstream dependency found! Auto update .travis.yml",
+                    "message": "New upstream dependency found! \
+Auto update %s" % GITHUB_FILE,
                     "parents": [HEAD['commit']['sha']],
                     "tree": HEAD['UPDATE']['tree']['sha']
                 }
             )
-    HEAD['UPDATE']['commit'] = { 'sha' : data['sha'] }
+    HEAD['UPDATE']['commit'] = {'sha': data['sha']}
 
     # step 7: Update HEAD, but don't force it!
     data = post_url(
@@ -258,7 +264,7 @@ def update_github(**kwargs):
                 }
             )
 
-    if data.has_key('object'): # PASS
+    if 'object' in data:  # PASS
         pass
-    else: # FAIL
+    else:  # FAIL
         print data['message']
