@@ -1,3 +1,4 @@
+import os
 import yaml
 import strazar
 import unittest
@@ -12,14 +13,97 @@ class StrazarGitHubTestCase(unittest.TestCase):
         Tests related to GitHub functionality
     """
 
-    pass
-#    def test_update_github(self):
-#        kwargs = {
-#                    'GITHUB_REPO' : 'atodorov/bztest',
-#                    'GITHUB_BRANCH' : 'master',
-#                    'GITHUB_FILE' : '.travis.yml'
-#        }
-#        strazar.update_github(commit_mode=False, **kwargs)
+    def test_no_github_token_raises_exception(self):
+        """
+            WHEN no GITHUB_TOKEN is configured in os.environ
+            THEN update_github() raises an exception
+        """
+        with self.assertRaises(RuntimeError):
+            strazar.update_github()
+
+    def test_update_github(self):
+        def _get_url(url, post_data = None):
+            if url == '/repos/MrSenko/strazar/git/refs/heads/master':
+                return {
+                    "ref": "refs/heads/master",
+                    "object": {
+                        "sha": "2c00076236089e8713afb69799205e043d0068d8",
+                        "type": "commit",
+                        "url": "https://api.github.com/repos/MrSenko/strazar/git/commits/2c00076236089e8713afb69799205e043d0068d8"
+                    }
+                }
+            elif url.find("/repos/MrSenko/strazar/git/commits/2c00076236089e8713afb69799205e043d0068d8") > -1:
+                return {
+                    "sha": "2c00076236089e8713afb69799205e043d0068d8",
+                    "tree": {
+                        "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
+                        "url": "https://api.github.com/repos/MrSenko/strazar/git/trees/175b571e84ae67a54a3fb46ae0be9ccc39c8efb6"
+                    },
+                    "message": "Added .travis.yml",
+                }
+            elif url.find('/repos/MrSenko/strazar/git/trees/175b571e84ae67a54a3fb46ae0be9ccc39c8efb6') > -1:
+                return {
+                    "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
+                    "tree": [
+                        {
+                            "path": ".gitignore",
+                            "url": "https://api.github.com/repos/MrSenko/strazar/git/blobs/004a8d7a778d7fda2a8f409d72ba517cb8325fa3"
+                        },
+                        {
+                            "path": ".travis.yml",
+                            "url": "https://api.github.com/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89"
+                        }
+                      ],
+                }
+            elif url.find('/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89') > -1:
+                return {
+                    "content": "bGFuZ3VhZ2U6IHB5dGhvbgpweXRob246CiAgLSAyLjcKICAtIDMuNQppbnN0\nYWxsOgogIC0gcGlwIGluc3RhbGwgY292ZXJhZ2UgZmxha2U4IG1vY2sgUHlZ\nQU1MPT0kX1BZWUFNTCBQeUdpdGh1Yj09JF9QWUdJVEhVQgpzY3JpcHQ6CiAg\nLSAuL3Rlc3Quc2gKZW52OgogIC0gX1BZWUFNTD0zLjExIF9QWUdJVEhVQj0x\nLjI2LjAK\n",
+                    "encoding": "base64"
+                }
+            elif url == '/repos/MrSenko/strazar/git/blobs' and post_data is not None:
+                return {
+                    "sha": 'new-blob'
+                }
+            elif url == '/repos/MrSenko/strazar/git/trees' and post_data is not None:
+                return {
+                    "sha": 'new-tree'
+                }
+            elif url == '/repos/MrSenko/strazar/git/commits' and post_data is not None:
+                return {
+                    "sha": 'new-commit'
+                }
+            elif url == '/repos/MrSenko/strazar/refs/heads/master' and post_data is not None:
+                return {
+                    "ref": "refs/heads/master",
+                    "url": "https://api.github.com/repos/MrSenko/strazar/git/refs/heads/master",
+                    "object": {
+                        "type": "commit",
+                        "sha": "new-commit",
+                        "url": "https://api.github.com/repos/MrSenko/strazar/git/commits/new-commit"
+                    }
+                }
+            else:
+                raise RuntimeError("I don't know how to mock this yet!")
+
+
+        kwargs = {
+                'GITHUB_REPO' : 'MrSenko/strazar',
+                'GITHUB_BRANCH' : 'master',
+                'GITHUB_FILE' : '.travis.yml',
+                'name': 'PyYAML',
+                'version': '3.12',
+                'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
+        }
+
+        _orig_get_url = strazar.get_url
+        strazar.get_url = _get_url
+        os.environ['GITHUB_TOKEN'] = 'testing'
+        try:
+
+            strazar.update_github(**kwargs)
+        finally:
+            strazar.get_url = _orig_get_url
+            del os.environ['GITHUB_TOKEN']
 
 class StrazarPypiMonitorTestCase(unittest.TestCase):
     """

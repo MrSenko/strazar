@@ -162,14 +162,12 @@ def update_travis(data, package, new_version):
     return yaml.dump(travis, default_flow_style=False)
 
 
-def update_github(commit_mode=True, **kwargs):
+def update_github(**kwargs):
     """
         Update GitHub via API
     """
     if not os.environ.has_key("GITHUB_TOKEN"):
-        raise Exception("Set the GITHUB_TOKEN variable")
-
-    hub = Github(os.environ["GITHUB_TOKEN"])
+        raise RuntimeError("Set the GITHUB_TOKEN variable")
 
     GITHUB_REPO = kwargs.get('GITHUB_REPO')
     GITHUB_BRANCH = kwargs.get('GITHUB_BRANCH')
@@ -204,7 +202,7 @@ def update_github(commit_mode=True, **kwargs):
             break
 
     old_travis = data.rstrip()
-    new_travis = update_travis(old_travis, kwargs.get('package'), kwargs.get('version'))
+    new_travis = update_travis(old_travis, kwargs.get('name'), kwargs.get('version'))
 
     # bail out if nothing changed
     if new_travis == old_travis:
@@ -215,9 +213,6 @@ def update_github(commit_mode=True, **kwargs):
     ####
     #### WARNING WRITE OPERATIONS BELOW
     ####
-
-    if not commit_mode:
-        return
 
     # step 3: Post your new file to the server
     data = post_url(
