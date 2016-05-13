@@ -1,0 +1,10 @@
+language: python
+python:
+  - 2.7
+  - 3.5
+install:
+  - pip install coverage flake8 mock PyYAML==$_PYYAML PyGithub==$_PYGITHUB
+script:
+  - ./test.sh
+env:
+  - _PYYAML=3.11 _PYGITHUB=1.26.0
