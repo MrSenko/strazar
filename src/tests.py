@@ -8,6 +8,79 @@ except ImportError:
     import mock
 from datetime import datetime
 
+_url_mock_values = {
+    False: {
+        '/repos/MrSenko/strazar/git/refs/heads/master': {
+            "ref": "refs/heads/master",
+            "object": {
+                "sha": "2c00076236089e8713afb69799205e043d0068d8",
+                "type": "commit",
+                "url": "/repos/MrSenko/strazar/git/commits/2c00076236089e8713afb69799205e043d0068d8"
+            }
+        },
+        '/repos/MrSenko/strazar/git/commits/2c00076236089e8713afb69799205e043d0068d8': {
+            "sha": "2c00076236089e8713afb69799205e043d0068d8",
+            "tree": {
+                "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
+                "url": "/repos/MrSenko/strazar/git/trees/175b571e84ae67a54a3fb46ae0be9ccc39c8efb6"
+            },
+            "message": "Added .travis.yml",
+        },
+        '/repos/MrSenko/strazar/git/trees/175b571e84ae67a54a3fb46ae0be9ccc39c8efb6': {
+            "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
+            "tree": [
+                {
+                    "path": ".gitignore",
+                    "url": "/repos/MrSenko/strazar/git/blobs/004a8d7a778d7fda2a8f409d72ba517cb8325fa3"
+                },
+                {
+                    "path": ".travis.yml",
+                    "url": "/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89"
+                }
+              ],
+        },
+        '/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89': {
+            "content": "bGFuZ3VhZ2U6IHB5dGhvbgpweXRob246CiAgLSAyLjcKICAtIDMuNQppbnN0\nYWxsOgogIC0gcGlwIGluc3RhbGwgY292ZXJhZ2UgZmxha2U4IG1vY2sgUHlZ\nQU1MPT0kX1BZWUFNTCBQeUdpdGh1Yj09JF9QWUdJVEhVQgpzY3JpcHQ6CiAg\nLSAuL3Rlc3Quc2gKZW52OgogIC0gX1BZWUFNTD0zLjExIF9QWUdJVEhVQj0x\nLjI2LjAK\n",
+            "encoding": "base64"
+        },
+    },
+    True: {
+        '/repos/MrSenko/strazar/git/blobs': {
+            "sha": 'new-blob'
+        },
+        '/repos/MrSenko/strazar/git/trees': {
+            "sha": 'new-tree'
+        },
+        '/repos/MrSenko/strazar/git/commits': {
+            "sha": 'new-commit'
+        },
+        '/repos/MrSenko/strazar/git/refs/heads/master': {
+            "ref": "refs/heads/master",
+            "url": "https://api.github.com/repos/MrSenko/strazar/git/refs/heads/master",
+            "object": {
+                "type": "commit",
+                "sha": "new-commit",
+                "url": "https://api.github.com/repos/MrSenko/strazar/git/commits/new-commit"
+            }
+        },
+    }
+}
+
+def _get_url_mock(url, push_data=None, updates={}):
+    values = {}
+    values.update(_url_mock_values)
+    for key in updates.keys():
+        values[key].update(updates[key])
+
+    request = values[push_data is not None]
+
+    if url in request:
+        return request[url]
+    else:
+        raise RuntimeError("I don't know how to mock '%s' yet!" % url)
+
+
+
 class StrazarGitHubTestCase(unittest.TestCase):
     """
         Tests related to GitHub functionality
@@ -22,69 +95,18 @@ class StrazarGitHubTestCase(unittest.TestCase):
             strazar.update_github()
 
     def test_update_github(self):
-        def _get_url(url, post_data = None):
-            if url == '/repos/MrSenko/strazar/git/refs/heads/master':
-                return {
-                    "ref": "refs/heads/master",
-                    "object": {
-                        "sha": "2c00076236089e8713afb69799205e043d0068d8",
-                        "type": "commit",
-                        "url": "https://api.github.com/repos/MrSenko/strazar/git/commits/2c00076236089e8713afb69799205e043d0068d8"
-                    }
-                }
-            elif url.find("/repos/MrSenko/strazar/git/commits/2c00076236089e8713afb69799205e043d0068d8") > -1:
-                return {
-                    "sha": "2c00076236089e8713afb69799205e043d0068d8",
-                    "tree": {
-                        "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
-                        "url": "https://api.github.com/repos/MrSenko/strazar/git/trees/175b571e84ae67a54a3fb46ae0be9ccc39c8efb6"
-                    },
-                    "message": "Added .travis.yml",
-                }
-            elif url.find('/repos/MrSenko/strazar/git/trees/175b571e84ae67a54a3fb46ae0be9ccc39c8efb6') > -1:
-                return {
-                    "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
-                    "tree": [
-                        {
-                            "path": ".gitignore",
-                            "url": "https://api.github.com/repos/MrSenko/strazar/git/blobs/004a8d7a778d7fda2a8f409d72ba517cb8325fa3"
-                        },
-                        {
-                            "path": ".travis.yml",
-                            "url": "https://api.github.com/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89"
-                        }
-                      ],
-                }
-            elif url.find('/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89') > -1:
-                return {
-                    "content": "bGFuZ3VhZ2U6IHB5dGhvbgpweXRob246CiAgLSAyLjcKICAtIDMuNQppbnN0\nYWxsOgogIC0gcGlwIGluc3RhbGwgY292ZXJhZ2UgZmxha2U4IG1vY2sgUHlZ\nQU1MPT0kX1BZWUFNTCBQeUdpdGh1Yj09JF9QWUdJVEhVQgpzY3JpcHQ6CiAg\nLSAuL3Rlc3Quc2gKZW52OgogIC0gX1BZWUFNTD0zLjExIF9QWUdJVEhVQj0x\nLjI2LjAK\n",
-                    "encoding": "base64"
-                }
-            elif url == '/repos/MrSenko/strazar/git/blobs' and post_data is not None:
-                return {
-                    "sha": 'new-blob'
-                }
-            elif url == '/repos/MrSenko/strazar/git/trees' and post_data is not None:
-                return {
-                    "sha": 'new-tree'
-                }
-            elif url == '/repos/MrSenko/strazar/git/commits' and post_data is not None:
-                return {
-                    "sha": 'new-commit'
-                }
-            elif url == '/repos/MrSenko/strazar/refs/heads/master' and post_data is not None:
-                return {
-                    "ref": "refs/heads/master",
-                    "url": "https://api.github.com/repos/MrSenko/strazar/git/refs/heads/master",
-                    "object": {
-                        "type": "commit",
-                        "sha": "new-commit",
-                        "url": "https://api.github.com/repos/MrSenko/strazar/git/commits/new-commit"
-                    }
-                }
-            else:
-                raise RuntimeError("I don't know how to mock this yet!")
-
+        """
+            WHEN there's a new package version
+            THEN .travis.yml is updated
+            AND change is pushed to GitHub
+        """
+        def _return_values(*args, **kwargs):
+            url = list(args)[0]
+            try:
+                post_data = list(args)[1]
+            except IndexError:
+                post_data = None
+            return _get_url_mock(url, post_data)
 
         kwargs = {
                 'GITHUB_REPO' : 'MrSenko/strazar',
@@ -96,11 +118,92 @@ class StrazarGitHubTestCase(unittest.TestCase):
         }
 
         _orig_get_url = strazar.get_url
-        strazar.get_url = _get_url
+        strazar.get_url = mock.MagicMock(side_effect=_return_values)
         os.environ['GITHUB_TOKEN'] = 'testing'
         try:
+            ret = strazar.update_github(**kwargs)
+            self.assertTrue(ret)
+        finally:
+            strazar.get_url = _orig_get_url
+            del os.environ['GITHUB_TOKEN']
 
-            strazar.update_github(**kwargs)
+    def test_update_github_github_returning_error_on_push(self):
+        """
+            WHEN GitHub returns an error on push
+            THEN it is handled correctly
+        """
+        def _return_values(*args, **kwargs):
+            url = list(args)[0]
+            try:
+                post_data = list(args)[1]
+            except IndexError:
+                post_data = None
+            return _get_url_mock(url, post_data, {
+                True: {
+                    '/repos/MrSenko/strazar/git/refs/heads/master': {
+                        "message": "Push to GitHub failed",
+                    }
+                }
+            })
+
+        kwargs = {
+                'GITHUB_REPO' : 'MrSenko/strazar',
+                'GITHUB_BRANCH' : 'master',
+                'GITHUB_FILE' : '.travis.yml',
+                'name': 'PyYAML',
+                'version': '3.12',
+                'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
+        }
+
+        _orig_get_url = strazar.get_url
+        strazar.get_url = mock.MagicMock(side_effect=_return_values)
+        os.environ['GITHUB_TOKEN'] = 'testing'
+        try:
+            ret = strazar.update_github(**kwargs)
+            self.assertNotEquals(ret, True)
+            self.assertEquals(ret, "Push to GitHub failed")
+        finally:
+            strazar.get_url = _orig_get_url
+            del os.environ['GITHUB_TOKEN']
+
+    def test_update_github_travis_not_updated(self):
+        """
+            WHEN .travis.yml is not updated
+            THEN the functions exits and returns True
+            AND no git write operations were performed
+        """
+        def _return_values(*args, **kwargs):
+            url = list(args)[0]
+            try:
+                post_data = list(args)[1]
+            except IndexError:
+                post_data = None
+            # this URL update will cause an exception if
+            # we attempt to execute any write operation
+            return _get_url_mock(url, post_data, {
+                True: {
+                        '/repos/MrSenko/strazar/git/blobs': {},
+                        '/repos/MrSenko/strazar/git/trees': {},
+                        '/repos/MrSenko/strazar/git/commits': {},
+                        '/repos/MrSenko/strazar/git/refs/heads/master': {},
+                    }
+            })
+
+        kwargs = {
+                'GITHUB_REPO' : 'MrSenko/strazar',
+                'GITHUB_BRANCH' : 'master',
+                'GITHUB_FILE' : '.travis.yml',
+                'name': 'PyYAML',
+                'version': '3.11',
+                'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
+        }
+
+        _orig_get_url = strazar.get_url
+        strazar.get_url = mock.MagicMock(side_effect=_return_values)
+        os.environ['GITHUB_TOKEN'] = 'testing'
+        try:
+            ret = strazar.update_github(**kwargs)
+            self.assertTrue(ret)
         finally:
             strazar.get_url = _orig_get_url
             del os.environ['GITHUB_TOKEN']

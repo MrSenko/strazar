@@ -211,9 +211,10 @@ def update_github(**kwargs):
                                kwargs.get('version'))
 
     # bail out if nothing changed
+# fails b/c strings tend to change, need to compare YAML objects
     if new_travis == old_travis:
         print "new == old, bailing out", kwargs
-        return
+        return True
 
     # ------------------------------------
     # !!! WARNING WRITE OPERATIONS BELOW
@@ -265,6 +266,6 @@ Auto update %s" % GITHUB_FILE,
             )
 
     if 'object' in data:  # PASS
-        pass
+        return True
     else:  # FAIL
-        print data['message']
+        return data['message']
