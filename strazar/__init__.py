@@ -188,11 +188,6 @@ def update_github(**kwargs):
 
     # step 2: Grab the commit that HEAD points to
     data = get_url(HEAD['url'])
-
-    # remove what we don't need for clarity
-    for key in data.keys():
-        if key not in ['sha', 'tree']:
-            del data[key]
     HEAD['commit'] = data
 
     # step 4: Get a hold of the tree that the commit points to
