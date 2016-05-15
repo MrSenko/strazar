@@ -14,7 +14,7 @@ config = {
     'author' : 'Mr. Senko',
     'author_email' : 'atodorov@mrsenko.com',
     'license' : 'BSD',
-    'description' : 'Automatic dependency testing',
+    'description' : 'Automatic upstream dependency testing',
     'long_description' : long_description,
     'url' : 'https://github.com/MrSenko/strazar',
     'keywords' : ['testing'],
