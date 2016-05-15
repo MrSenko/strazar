@@ -77,6 +77,8 @@ def monitor_pypi_rss(config):
             }
     """
     rss = get_url("https://pypi.python.org/pypi?:action=rss")
+    rss = rss.encode('ascii', 'ignore')
+
     dom = parseString(rss)
     for item in dom.getElementsByTagName("item"):
         try:

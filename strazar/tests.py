@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import yaml
 import strazar
@@ -438,6 +440,276 @@ class StrazarPypiMonitorTestCase(unittest.TestCase):
             strazar.get_url = _orig_get_url
 
         # assert callback has not been executed
+        _test_callback.assert_not_called()
+
+
+    def test_parse_rss_with_non_latin_chars(self):
+        """
+            WHEN RSS feed contains non-latin chars in pacakge description
+            THEN we should still be able to parse it
+            AND not raise an exception
+        """
+        _test_callback = mock.MagicMock()
+        config = {}
+
+        _orig_get_url = strazar.get_url
+        strazar.get_url = mock.MagicMock(return_value=u"""
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://my.netscape.com/publish/formats/rss-0.91.dtd">
+<rss version="0.91">
+ <channel>
+  <title>PyPI Recent Updates</title>
+  <link>https://pypi.python.org/pypi</link>
+  <description>Recent updates to the Python Package Index</description>
+  <language>en</language>
+
+  <item>
+    <title>gitvtag 0.1</title>
+    <link>http://pypi.python.org/pypi/gitvtag/0.1</link>
+    <description>A git subcommand for simple and straightforward version tagging</description>
+    <pubDate>15 May 2016 04:51:28 GMT</pubDate>
+   </item>
+  <item>
+    <title>python-socketio 1.3</title>
+    <link>http://pypi.python.org/pypi/python-socketio/1.3</link>
+    <description>Socket.IO server</description>
+    <pubDate>15 May 2016 04:42:24 GMT</pubDate>
+   </item>
+  <item>
+    <title>strazar 0.2.1</title>
+    <link>http://pypi.python.org/pypi/strazar/0.2.1</link>
+    <description>Automatic upstream dependency testing</description>
+    <pubDate>15 May 2016 04:39:02 GMT</pubDate>
+   </item>
+  <item>
+    <title>pyKevo 1.0.0</title>
+    <link>http://pypi.python.org/pypi/pyKevo/1.0.0</link>
+    <description>A simple Python project for people with Kevo smartlocks.</description>
+    <pubDate>15 May 2016 04:24:46 GMT</pubDate>
+   </item>
+  <item>
+    <title>ak-androguard 3.2.1</title>
+    <link>http://pypi.python.org/pypi/ak-androguard/3.2.1</link>
+    <description>A fork of official Androguard project</description>
+    <pubDate>15 May 2016 04:22:56 GMT</pubDate>
+   </item>
+  <item>
+    <title>ovation 1.0.1</title>
+    <link>http://pypi.python.org/pypi/ovation/1.0.1</link>
+    <description>Ovation Python API</description>
+    <pubDate>15 May 2016 04:19:30 GMT</pubDate>
+   </item>
+  <item>
+    <title>trimesh 1.14.1</title>
+    <link>http://pypi.python.org/pypi/trimesh/1.14.1</link>
+    <description>Import, export, process, analyze and view triangular meshes.</description>
+    <pubDate>15 May 2016 04:03:26 GMT</pubDate>
+   </item>
+  <item>
+    <title>metonic 0.01</title>
+    <link>http://pypi.python.org/pypi/metonic/0.01</link>
+    <description></description>
+    <pubDate>15 May 2016 04:02:50 GMT</pubDate>
+   </item>
+  <item>
+    <title>sappho 0.9.0</title>
+    <link>http://pypi.python.org/pypi/sappho/0.9.0</link>
+    <description>2D game engine (pygame)</description>
+    <pubDate>15 May 2016 03:34:06 GMT</pubDate>
+   </item>
+  <item>
+    <title>nester_bigbooa 1.0.0</title>
+    <link>http://pypi.python.org/pypi/nester_bigbooa/1.0.0</link>
+    <description>UNKNOWN</description>
+    <pubDate>15 May 2016 03:07:54 GMT</pubDate>
+   </item>
+  <item>
+    <title>TerminalPrinter 1.1.6</title>
+    <link>http://pypi.python.org/pypi/TerminalPrinter/1.1.6</link>
+    <description>文字,字符,图片终端打印, print something in terminal</description>
+    <pubDate>15 May 2016 02:59:12 GMT</pubDate>
+   </item>
+  <item>
+    <title>ufs_tools 0.5.0</title>
+    <link>http://pypi.python.org/pypi/ufs_tools/0.5.0</link>
+    <description>Some functions can be used during python development</description>
+    <pubDate>15 May 2016 02:57:15 GMT</pubDate>
+   </item>
+  <item>
+    <title>PyRIC 0.0.7</title>
+    <link>http://pypi.python.org/pypi/PyRIC/0.0.7</link>
+    <description>Pythonic iw</description>
+    <pubDate>15 May 2016 02:52:10 GMT</pubDate>
+   </item>
+  <item>
+    <title>async_notifications 0.0.2</title>
+    <link>http://pypi.python.org/pypi/async_notifications/0.0.2</link>
+    <description>Email async notifications with celery.</description>
+    <pubDate>15 May 2016 02:45:27 GMT</pubDate>
+   </item>
+  <item>
+    <title>scspell3k 1.2</title>
+    <link>http://pypi.python.org/pypi/scspell3k/1.2</link>
+    <description>A conservative interactive spell checker for source code.</description>
+    <pubDate>15 May 2016 02:40:37 GMT</pubDate>
+   </item>
+  <item>
+    <title>django-system-globals 0.0.5</title>
+    <link>http://pypi.python.org/pypi/django-system-globals/0.0.5</link>
+    <description>A Django App to manage any system globals from a DB table.</description>
+    <pubDate>15 May 2016 02:33:46 GMT</pubDate>
+   </item>
+  <item>
+    <title>colorclass 2.2.0</title>
+    <link>http://pypi.python.org/pypi/colorclass/2.2.0</link>
+    <description>Colorful worry-free console applications for Linux, Mac OS X, and Windows.</description>
+    <pubDate>15 May 2016 02:23:21 GMT</pubDate>
+   </item>
+  <item>
+    <title>guano 0.0.3</title>
+    <link>http://pypi.python.org/pypi/guano/0.0.3</link>
+    <description>GUANO, the "Grand Unified" bat acoustics metadata format</description>
+    <pubDate>15 May 2016 02:11:49 GMT</pubDate>
+   </item>
+  <item>
+    <title>pyservice_django 1.1.19</title>
+    <link>http://pypi.python.org/pypi/pyservice_django/1.1.19</link>
+    <description>UNKNOWN</description>
+    <pubDate>15 May 2016 02:06:19 GMT</pubDate>
+   </item>
+  <item>
+    <title>documenteer 0.1.2</title>
+    <link>http://pypi.python.org/pypi/documenteer/0.1.2</link>
+    <description>Tools for LSST DM documentation projects</description>
+    <pubDate>15 May 2016 01:49:02 GMT</pubDate>
+   </item>
+  <item>
+    <title>temporary 1.1.0</title>
+    <link>http://pypi.python.org/pypi/temporary/1.1.0</link>
+    <description>Context managers for managing temporary files and directories.</description>
+    <pubDate>15 May 2016 01:47:42 GMT</pubDate>
+   </item>
+  <item>
+    <title>PyPrind 2.9.8</title>
+    <link>http://pypi.python.org/pypi/PyPrind/2.9.8</link>
+    <description>Python Progress Bar and Percent Indicator Utility</description>
+    <pubDate>15 May 2016 01:31:09 GMT</pubDate>
+   </item>
+  <item>
+    <title>discon 0.0.12</title>
+    <link>http://pypi.python.org/pypi/discon/0.0.12</link>
+    <description>distribution to pypi and conda</description>
+    <pubDate>15 May 2016 01:22:09 GMT</pubDate>
+   </item>
+  <item>
+    <title>update-conf.py 0.4.5</title>
+    <link>http://pypi.python.org/pypi/update-conf.py/0.4.5</link>
+    <description>Generate config files from 'conf.d' like directories</description>
+    <pubDate>15 May 2016 01:12:07 GMT</pubDate>
+   </item>
+  <item>
+    <title>django-db-file-storage 0.4.1</title>
+    <link>http://pypi.python.org/pypi/django-db-file-storage/0.4.1</link>
+    <description>Custom FILE_STORAGE for Django. Saves files in your database instead of your file system.</description>
+    <pubDate>15 May 2016 01:06:54 GMT</pubDate>
+   </item>
+  <item>
+    <title>callee 0.2.1</title>
+    <link>http://pypi.python.org/pypi/callee/0.2.1</link>
+    <description>Argument matchers for unittest.mock</description>
+    <pubDate>15 May 2016 01:04:57 GMT</pubDate>
+   </item>
+  <item>
+    <title>practic_e 1.3.1</title>
+    <link>http://pypi.python.org/pypi/practic_e/1.3.1</link>
+    <description>UNKNOWN</description>
+    <pubDate>15 May 2016 00:58:22 GMT</pubDate>
+   </item>
+  <item>
+    <title>nester_qk 1.4.0</title>
+    <link>http://pypi.python.org/pypi/nester_qk/1.4.0</link>
+    <description>A simple printer of nested lists</description>
+    <pubDate>15 May 2016 00:55:51 GMT</pubDate>
+   </item>
+  <item>
+    <title>cdmetro 1.0.10</title>
+    <link>http://pypi.python.org/pypi/cdmetro/1.0.10</link>
+    <description>Un admin de django diferente</description>
+    <pubDate>15 May 2016 00:52:53 GMT</pubDate>
+   </item>
+  <item>
+    <title>graphmachine 3.0.0.42</title>
+    <link>http://pypi.python.org/pypi/graphmachine/3.0.0.42</link>
+    <description>Graph Machine application</description>
+    <pubDate>15 May 2016 00:30:14 GMT</pubDate>
+   </item>
+  <item>
+    <title>mongoelector 0.1.1</title>
+    <link>http://pypi.python.org/pypi/mongoelector/0.1.1</link>
+    <description>Distributed master election and locking in mongodb</description>
+    <pubDate>15 May 2016 00:04:32 GMT</pubDate>
+   </item>
+  <item>
+    <title>psychic_disco 0.7.0</title>
+    <link>http://pypi.python.org/pypi/psychic_disco/0.7.0</link>
+    <description>Pythonic Microservices on AWS Lambda</description>
+    <pubDate>15 May 2016 00:03:27 GMT</pubDate>
+   </item>
+  <item>
+    <title>blockstack-proofs 0.0.5</title>
+    <link>http://pypi.python.org/pypi/blockstack-proofs/0.0.5</link>
+    <description>Python library for verifying proofs (twitter, github, domains etc) linked to a blockchain ID</description>
+    <pubDate>15 May 2016 00:01:21 GMT</pubDate>
+   </item>
+  <item>
+    <title>supra 1.0.16</title>
+    <link>http://pypi.python.org/pypi/supra/1.0.16</link>
+    <description>It's an easy JSON services generator</description>
+    <pubDate>14 May 2016 23:59:35 GMT</pubDate>
+   </item>
+  <item>
+    <title>otree-core 0.5.0.dev18</title>
+    <link>http://pypi.python.org/pypi/otree-core/0.5.0.dev18</link>
+    <description>oTree is a toolset that makes it easy to create and administer web-based social science experiments.</description>
+    <pubDate>14 May 2016 23:58:44 GMT</pubDate>
+   </item>
+  <item>
+    <title>wdom 0.1.1</title>
+    <link>http://pypi.python.org/pypi/wdom/0.1.1</link>
+    <description>GUI library for browser-based desktop applications</description>
+    <pubDate>14 May 2016 23:58:38 GMT</pubDate>
+   </item>
+  <item>
+    <title>ajenti-panel 2.1.14</title>
+    <link>http://pypi.python.org/pypi/ajenti-panel/2.1.14</link>
+    <description>Ajenti core based panel</description>
+    <pubDate>14 May 2016 23:56:45 GMT</pubDate>
+   </item>
+  <item>
+    <title>aj 2.1.14</title>
+    <link>http://pypi.python.org/pypi/aj/2.1.14</link>
+    <description>Web UI base toolkit</description>
+    <pubDate>14 May 2016 23:56:35 GMT</pubDate>
+   </item>
+  <item>
+    <title>plonetheme.barceloneta 1.6.19</title>
+    <link>http://pypi.python.org/pypi/plonetheme.barceloneta/1.6.19</link>
+    <description>The default theme for Plone 5.</description>
+    <pubDate>14 May 2016 23:50:25 GMT</pubDate>
+   </item>
+  <item>
+    <title>mdsplus-alpha 7.0.280</title>
+    <link>http://pypi.python.org/pypi/mdsplus-alpha/7.0.280</link>
+    <description>MDSplus Python Objects</description>
+    <pubDate>14 May 2016 23:49:47 GMT</pubDate>
+   </item>
+  </channel>
+</rss>
+""".strip())
+        try:
+            strazar.monitor_pypi_rss(config)
+        finally:
+            strazar.get_url = _orig_get_url
         _test_callback.assert_not_called()
 
 
