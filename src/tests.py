@@ -40,7 +40,7 @@ _url_mock_values = {
               ],
         },
         '/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89': {
-            "content": "bGFuZ3VhZ2U6IHB5dGhvbgpweXRob246CiAgLSAyLjcKICAtIDMuNQppbnN0\nYWxsOgogIC0gcGlwIGluc3RhbGwgY292ZXJhZ2UgZmxha2U4IG1vY2sgUHlZ\nQU1MPT0kX1BZWUFNTCBQeUdpdGh1Yj09JF9QWUdJVEhVQgpzY3JpcHQ6CiAg\nLSAuL3Rlc3Quc2gKZW52OgogIC0gX1BZWUFNTD0zLjExIF9QWUdJVEhVQj0x\nLjI2LjAK\n",
+            "content": "bGFuZ3VhZ2U6IHB5dGhvbgpweXRob246CiAgLSAyLjcKICAtIDMuNQppbnN0YWxsOgogIC0gcGlwIGluc3RhbGwgY292ZXJhZ2UgZmxha2U4IG1vY2sgUHlZQU1MPT0kX1BZWUFNTCBQeUdpdGh1Yj09JF9QWUdJVEhVQgpzY3JpcHQ6CiAgLSAuL3Rlc3Quc2gKZW52OgogIC0gX1BZR0lUSFVCPTEuMjYuMCBfUFlZQU1MPTMuMTEK",
             "encoding": "base64"
         },
     },

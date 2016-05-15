@@ -208,7 +208,6 @@ def update_github(**kwargs):
                                kwargs.get('version'))
 
     # bail out if nothing changed
-# fails b/c strings tend to change, need to compare YAML objects
     if new_travis == old_travis:
         print "new == old, bailing out", kwargs
         return True
