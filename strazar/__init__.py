@@ -144,6 +144,7 @@ def calculate_new_travis_env(env_vars):
     new_env = []
     for p in list(product(*intermediate)):
         new_env.append(' '.join(["%s=%s" % (k, v) for k, v in list(p)]))
+    new_env.sort()
     return new_env
 
 
