@@ -66,13 +66,8 @@ _url_mock_values = {
     }
 }
 
-def _get_url_mock(url, push_data=None, updates={}):
-    values = {}
-    values.update(_url_mock_values)
-    for key in updates.keys():
-        values[key].update(updates[key])
-
-    request = values[push_data is not None]
+def _get_url_mock(url, push_data=None):
+    request = _url_mock_values[push_data is not None]
 
     if url in request:
         return request[url]
@@ -100,14 +95,6 @@ class StrazarGitHubTestCase(unittest.TestCase):
             THEN .travis.yml is updated
             AND change is pushed to GitHub
         """
-        def _return_values(*args, **kwargs):
-            url = list(args)[0]
-            try:
-                post_data = list(args)[1]
-            except IndexError:
-                post_data = None
-            return _get_url_mock(url, post_data)
-
         kwargs = {
                 'GITHUB_REPO' : 'MrSenko/strazar',
                 'GITHUB_BRANCH' : 'master',
@@ -118,7 +105,7 @@ class StrazarGitHubTestCase(unittest.TestCase):
         }
 
         _orig_get_url = strazar.get_url
-        strazar.get_url = mock.MagicMock(side_effect=_return_values)
+        strazar.get_url = mock.MagicMock(side_effect=_get_url_mock)
         os.environ['GITHUB_TOKEN'] = 'testing'
         try:
             ret = strazar.update_github(**kwargs)
@@ -138,13 +125,12 @@ class StrazarGitHubTestCase(unittest.TestCase):
                 post_data = list(args)[1]
             except IndexError:
                 post_data = None
-            return _get_url_mock(url, post_data, {
-                True: {
-                    '/repos/MrSenko/strazar/git/refs/heads/master': {
+            if post_data and url == '/repos/MrSenko/strazar/git/refs/heads/master':
+                return {
                         "message": "Push to GitHub failed",
                     }
-                }
-            })
+            else:
+                return _get_url_mock(*args)
 
         kwargs = {
                 'GITHUB_REPO' : 'MrSenko/strazar',
@@ -166,28 +152,54 @@ class StrazarGitHubTestCase(unittest.TestCase):
             strazar.get_url = _orig_get_url
             del os.environ['GITHUB_TOKEN']
 
+
     def test_update_github_travis_not_updated(self):
         """
             WHEN .travis.yml is not updated
             THEN the functions exits and returns True
             AND no git write operations were performed
         """
+        kwargs = {
+                'GITHUB_REPO' : 'MrSenko/strazar',
+                'GITHUB_BRANCH' : 'master',
+                'GITHUB_FILE' : '.travis.yml',
+                'name': 'PyYAML',
+                'version': '3.11',
+                'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
+        }
+
+        _orig_get_url = strazar.get_url
+        _orig_post_url = strazar.post_url
+        strazar.get_url = mock.MagicMock(side_effect=_get_url_mock)
+        strazar.post_url = mock.MagicMock(side_effect=Exception('Boom!'))
+        os.environ['GITHUB_TOKEN'] = 'testing'
+        try:
+            ret = strazar.update_github(**kwargs)
+            self.assertTrue(ret)
+            # no write operations performed
+            strazar.post_url.assert_not_called()
+        finally:
+            strazar.get_url = _orig_get_url
+            strazar.post_url = _orig_post_url
+            del os.environ['GITHUB_TOKEN']
+
+
+    def test_update_github_no_travis_yml_in_repository(self):
+        """
+            GIVEN there is no .travis.yml file in the repository
+            WHEN we call update_github()
+            THEN exception is Raised
+        """
         def _return_values(*args, **kwargs):
             url = list(args)[0]
-            try:
-                post_data = list(args)[1]
-            except IndexError:
-                post_data = None
-            # this URL update will cause an exception if
-            # we attempt to execute any write operation
-            return _get_url_mock(url, post_data, {
-                True: {
-                        '/repos/MrSenko/strazar/git/blobs': {},
-                        '/repos/MrSenko/strazar/git/trees': {},
-                        '/repos/MrSenko/strazar/git/commits': {},
-                        '/repos/MrSenko/strazar/git/refs/heads/master': {},
+
+            if url == '/repos/MrSenko/strazar/git/trees/175b571e84ae67a54a3fb46ae0be9ccc39c8efb6':
+                return {
+                        "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
+                        "tree": [],
                     }
-            })
+            else:
+                return _get_url_mock(*args)
 
         kwargs = {
                 'GITHUB_REPO' : 'MrSenko/strazar',
@@ -199,13 +211,18 @@ class StrazarGitHubTestCase(unittest.TestCase):
         }
 
         _orig_get_url = strazar.get_url
+        _orig_post_url = strazar.post_url
         strazar.get_url = mock.MagicMock(side_effect=_return_values)
+        strazar.post_url = mock.MagicMock(side_effect=Exception('Boom!'))
         os.environ['GITHUB_TOKEN'] = 'testing'
         try:
-            ret = strazar.update_github(**kwargs)
-            self.assertTrue(ret)
+            with self.assertRaises(RuntimeError):
+                strazar.update_github(**kwargs)
+            # no write operations performed
+            strazar.post_url.assert_not_called()
         finally:
             strazar.get_url = _orig_get_url
+            strazar.post_url = _orig_post_url
             del os.environ['GITHUB_TOKEN']
 
 class StrazarPypiMonitorTestCase(unittest.TestCase):

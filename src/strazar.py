@@ -196,11 +196,17 @@ def update_github(**kwargs):
 
     # intermediate step: get the latest content from GitHub
     # and make an updated version of .travis.yml
+    github_file_found = False
     for obj in data['tree']:
         if obj['path'] == GITHUB_FILE:
             data = get_url(obj['url'])  # get the blob from the tree
             data = base64.b64decode(data['content'])
+            github_file_found = True
             break
+
+    if not github_file_found:
+        raise RuntimeError("Repository %s doesn't contain a file named '%s'!" %
+                           (GITHUB_REPO, GITHUB_FILE))
 
     old_travis = yaml.load(data.rstrip())
     new_travis = update_travis(old_travis,
