@@ -104,7 +104,7 @@ def monitor_pypi_rss(config):
 
 def build_travis_env(travis, package, new_version):
     """
-        Given a parsed YAML object returns an environment
+        Given a YAML object returns an environment
         dict containing all packages and versions including the
         new one.
     """
@@ -142,27 +142,24 @@ def calculate_new_travis_env(env_vars):
     return new_env
 
 
-def update_travis(data, package, new_version):
+def update_travis(travis, package, new_version):
     """
         Parses .travis.yml, builds a list of package==version
         from the environment and updates the environment if
         the new version is not listed there.
 
-        @data - string - the text contents of a .travis.yml file
+        @travis - YAML object of a .travis.yml file
         @package - string - package name
         @new_version - string - the version string
 
         @return - string - the new contents of the file
     """
-    # parse the yaml first
-    travis = yaml.load(data)
-
     # build the environment list incl. the latest version
     env_vars = build_travis_env(travis, package, new_version)
     # and rebuild all combinations
-    travis['env'] = calculate_new_travis_env(env_vars)
-
-    return yaml.dump(travis, default_flow_style=False)
+    new_travis = travis.copy()
+    new_travis['env'] = calculate_new_travis_env(env_vars)
+    return new_travis
 
 
 def update_github(**kwargs):
@@ -205,7 +202,7 @@ def update_github(**kwargs):
             data = base64.b64decode(data['content'])
             break
 
-    old_travis = data.rstrip()
+    old_travis = yaml.load(data.rstrip())
     new_travis = update_travis(old_travis,
                                kwargs.get('name'),
                                kwargs.get('version'))
@@ -215,6 +212,8 @@ def update_github(**kwargs):
     if new_travis == old_travis:
         print "new == old, bailing out", kwargs
         return True
+    else:
+        new_travis = yaml.dump(new_travis, default_flow_style=False)
 
     # ------------------------------------
     # !!! WARNING WRITE OPERATIONS BELOW

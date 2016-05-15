@@ -433,12 +433,12 @@ class StrazarTravisTestCase(unittest.TestCase):
             WHEN new package version is already present in environment
             THEN it is not included twice
         """
-        old_travis = """
+        old_travis = yaml.load("""
 language: python
 env:
   - _PYYAML=3.11
-"""
-        env = strazar.build_travis_env(yaml.load(old_travis), 'PyYAML', '3.11')
+""")
+        env = strazar.build_travis_env(old_travis, 'PyYAML', '3.11')
         self.assertEquals(len(env.keys()), 1)
         self.assertTrue('_PYYAML' in env)
         self.assertEquals(env['_PYYAML'], set(['3.11']))
@@ -448,12 +448,12 @@ env:
             WHEN new package version is not present in environment
             THEN it is included
         """
-        old_travis = """
+        old_travis = yaml.load("""
 language: python
 env:
   - _PYYAML=3.11
-"""
-        env = strazar.build_travis_env(yaml.load(old_travis), 'PyYAML', '4.11')
+""")
+        env = strazar.build_travis_env(old_travis, 'PyYAML', '4.11')
         self.assertEquals(len(env.keys()), 1)
         self.assertTrue('_PYYAML' in env)
         self.assertEquals(env['_PYYAML'], set(['3.11', '4.11']))
@@ -463,13 +463,13 @@ env:
             WHEN there are 2 older versions in environment
             THEN the new one is included as well
         """
-        old_travis = """
+        old_travis = yaml.load("""
 language: python
 env:
   - _PYYAML=3.11
   - _PYYAML=3.12
-"""
-        env = strazar.build_travis_env(yaml.load(old_travis), 'PyYAML', '4.11')
+""")
+        env = strazar.build_travis_env(old_travis, 'PyYAML', '4.11')
         self.assertEquals(len(env.keys()), 1)
         self.assertTrue('_PYYAML' in env)
         self.assertEquals(env['_PYYAML'], set(['3.11', '3.12', '4.11']))
@@ -530,13 +530,29 @@ env:
             WHEN there is no new version
             THEN .travis.yml should not change
         """
-        old_travis = """
+        old_travis = yaml.load("""
 env:
 - _PYYAML=3.11
 language: python
-"""
+""")
         new_travis = strazar.update_travis(old_travis, 'PyYAML', '3.11')
-        self.assertEquals(new_travis.strip(), old_travis.strip())
+        self.assertEquals(new_travis, old_travis)
+
+
+    def test_update_travis_no_new_version_but_different_sort(self):
+        """
+            WHEN there is no new version
+            BUT the input file is not sorted
+            THEN .travis.yml should change
+        """
+        old_travis = yaml.load("""
+env:
+  - _PYYAML=3.11 _PYGITHUB=1.26.0
+""")
+        new_travis = strazar.update_travis(old_travis, 'PyYAML', '3.11')
+        self.assertNotEquals(new_travis, old_travis)
+        # note: the order has been changed due to sorting
+        self.assertEquals(new_travis['env'], ['_PYGITHUB=1.26.0 _PYYAML=3.11'])
 
 
     def test_update_travis_1_pkg_new_version(self):
@@ -545,19 +561,19 @@ language: python
             THEN .travis.yml should change accordingly
         """
 
-        old_travis = """
+        old_travis = yaml.load("""
 env:
 - _PYYAML=3.11
 language: python
-"""
-        expected_travis = """
+""")
+        expected_travis = yaml.load("""
 env:
 - _PYYAML=3.11
 - _PYYAML=3.12
 language: python
-"""
+""")
         new_travis = strazar.update_travis(old_travis, 'PyYAML', '3.12')
-        self.assertEquals(new_travis.strip(), expected_travis.strip())
+        self.assertEquals(new_travis, expected_travis)
 
     def test_update_travis_2_pkgs_new_version(self):
         """
@@ -566,16 +582,16 @@ language: python
             THEN .travis.yml should change accordingly
         """
 
-        old_travis = """
+        old_travis = yaml.load("""
 env:
 - _JINJA_AB=0.3.0 _PYYAML=3.11
 language: python
-"""
-        expected_travis = """
+""")
+        expected_travis = yaml.load("""
 env:
 - _JINJA_AB=0.3.0 _PYYAML=3.11
 - _JINJA_AB=0.3.0 _PYYAML=3.12
 language: python
-"""
+""")
         new_travis = strazar.update_travis(old_travis, 'PyYAML', '3.12')
-        self.assertEquals(new_travis.strip(), expected_travis.strip())
+        self.assertEquals(new_travis, expected_travis)
