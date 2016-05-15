@@ -41,7 +41,7 @@ At the moment only `GitHub <https://github.com>`_ is supported as we use their
 API, not git directly!
 
 * ``GITHUB_TOKEN`` environment variable allows authenticated API access. This
-token needs the ``publi_repo`` or ``repo`` permission.
+  token needs the ``public_repo`` or ``repo`` permission.
 
 
 Monitor PyPI
