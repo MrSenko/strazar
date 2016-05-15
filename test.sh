@@ -1,5 +1,5 @@
 #!/bin/bash
 
-flake8 src/strazar.py && \
-coverage run --source src/ --branch -m unittest discover src -v && \
+flake8 strazar/__init__.py && \
+coverage run --source strazar/ --branch -m unittest discover strazar/ -v && \
 coverage report -m
