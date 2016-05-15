@@ -2,12 +2,17 @@ import os
 import json
 import yaml
 import base64
-import httplib
+try:
+    import httplib
+except ImportError:
+    import http.client as httplib
 from datetime import datetime
 from itertools import product
 from xml.dom.minidom import parseString
 
 
+# todo: this goes away once we port to
+# the Github module and don't use the API directly
 def get_url(url, post_data=None):
     # GitHub requires a valid UA string
     headers = {
