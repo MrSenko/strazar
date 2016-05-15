@@ -136,7 +136,7 @@ def calculate_new_travis_env(env_vars):
     # each element of intermediate is the product (aka combinations) of
     # all versions for a particular package
     _keys = env_vars.keys()
-    _keys.sort()
+    _keys = sorted(_keys)
     intermediate = [product([key], env_vars[key]) for key in _keys]
 
     # each element of new_env is single combination of all packages and
