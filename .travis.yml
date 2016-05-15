@@ -7,4 +7,4 @@ install:
 script:
   - ./test.sh
 env:
-  - _PYYAML=3.11 _PYGITHUB=1.26.0
+  - _PYGITHUB=1.26.0 _PYYAML=3.11
