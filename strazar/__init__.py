@@ -94,11 +94,11 @@ def monitor_pypi_rss(config):
 
                         # execute the call back
                         cfg['cb'](**args)
-                    except Exception, e:
-                        print e
+                    except Exception as e:
+                        print(e)
                         continue
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             continue
 
 
@@ -215,7 +215,7 @@ def update_github(**kwargs):
 
     # bail out if nothing changed
     if new_travis == old_travis:
-        print "new == old, bailing out", kwargs
+        print("new == old, bailing out", kwargs)
         return True
     else:
         new_travis = yaml.dump(new_travis, default_flow_style=False)
