@@ -44,6 +44,27 @@ API, not git directly!
   token needs the ``public_repo`` or ``repo`` permission.
 
 
+Prepare .travis.yml
+===================
+
+Strazar uses the variable format `_PACKAGE_NAME` where the variable name starts
+with an under-score followed by the capitalized package name. All hyphens are
+converted to under-scores as well. We advise that your ``.travis.yml`` files
+follow the same convention. This is how Strazar's  own ``.travis.yml`` looks
+like::
+
+    language: python
+    python:
+      - 2.7
+      - 3.5
+    install:
+      - pip install coverage flake8 mock PyYAML==$_PYYAML PyGithub==$_PYGITHUB
+    script:
+      - ./test.sh
+    env:
+      - _PYGITHUB=1.26.0 _PYYAML=3.11
+
+
 Monitor PyPI
 ============
 
