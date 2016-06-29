@@ -32,7 +32,7 @@ Gecko/20120601 Firefox/10.0.5',
                 'Authorization': 'token %s' % os.environ['GITHUB_TOKEN']
             })
 
-    (proto, host_path) = url.split('//')
+    (_, host_path) = url.split('//')
     (host_port, path) = host_path.split('/', 1)
     path = '/' + path
 
