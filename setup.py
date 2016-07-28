@@ -9,7 +9,7 @@ with open('README.rst') as file:
 
 config = {
     'name' : 'strazar',
-    'version' : '0.2.2',
+    'version' : '0.2.3',
     'packages' : find_packages(),
     'author' : 'Mr. Senko',
     'author_email' : 'atodorov@mrsenko.com',
