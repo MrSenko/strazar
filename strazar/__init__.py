@@ -76,6 +76,7 @@ def monitor_pypi_rss(config):
                 'args' : dict
             }
     """
+    print("fetching RSS info from PyPI")
     rss = get_url("https://pypi.python.org/pypi?:action=rss")
     rss = rss.encode('ascii', 'ignore')
 
@@ -104,6 +105,8 @@ def monitor_pypi_rss(config):
                     except Exception as e:
                         print(e)
                         continue
+            else:
+                print("package %s not found in config. continuing ..." % name)
         except Exception as e:
             print(e)
             continue
