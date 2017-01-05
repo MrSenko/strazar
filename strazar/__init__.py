@@ -121,39 +121,61 @@ def build_travis_env(travis, package, new_version):
         Given a YAML object returns an environment
         dict containing all packages and versions including the
         new one.
+
+        NOTE: the result is groupped by package names which appear
+        on the same line!
     """
-    env_vars = {}
+    groups = {}
+    pkg_versions = {}
+
     for line in travis['env']:
-        for item in line.split(' '):
-            k, v = item.split('=')
-            if k in env_vars:
-                env_vars[k].add(v)
+        packages_on_this_line = ()
+        for variable in line.split(' '):
+            p_name, p_version = variable.split('=')
+            packages_on_this_line += (p_name,)
+            if p_name in pkg_versions:
+                pkg_versions[p_name].add(p_version)
             else:
-                env_vars[k] = set([v])
+                pkg_versions[p_name] = set([p_version])
+        groups[packages_on_this_line] = {}
 
     # add the new version to the list
-    pkg_name = '_' + package.upper().replace('-', '_')
-    env_vars[pkg_name].add(new_version)
-    return env_vars
+    new_pkg_name = '_' + package.upper().replace('-', '_')
+    pkg_versions[new_pkg_name].add(new_version)
+
+    # for each group of packages, assign the versions which
+    # apply to it
+    for pkgs in groups:
+        for p_name in pkgs:
+            groups[pkgs][p_name] = pkg_versions[p_name]
+
+    return groups
 
 
-def calculate_new_travis_env(env_vars):
+def calculate_new_travis_env(groups):
     """
         Rebuilds the environment matrix as Cartesian product of all
         environment variables (aka packages) and their values (aka versions)
-    """
-    # each element of intermediate is the product (aka combinations) of
-    # all versions for a particular package
-    _keys = env_vars.keys()
-    _keys = sorted(_keys)
-    intermediate = [product([key], env_vars[key]) for key in _keys]
 
+        NOTE: only takes into account variables which are listed on that
+        particular line!
+    """
     # each element of new_env is single combination of all packages and
     # versions. this represents one line in the travis environment
     new_env = []
-    for p in list(product(*intermediate)):
-        new_env.append(' '.join(["%s=%s" % (k, v) for k, v in list(p)]))
-    new_env.sort()
+
+    for pkgs in groups:
+        # each element of intermediate is the product (aka combinations) of
+        # all versions for a particular package
+        _keys = groups[pkgs].keys()
+        _keys = sorted(_keys)
+        intermediate = [product([key], groups[pkgs][key]) for key in _keys]
+
+        # add the new env lines to the list
+        for p in list(product(*intermediate)):
+            new_env.append(' '.join(["%s=%s" % (k, v) for k, v in list(p)]))
+        new_env.sort()
+
     return new_env
 
 

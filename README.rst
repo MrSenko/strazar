@@ -14,6 +14,43 @@ API to pull and push changes automatically to your repositories. The actual
 environment setup and testing is performed by the CI server, while Strazar
 acts as a trigger for new builds!
 
+Changelog
+=========
+
+* master
+
+  * Fix a bug where Strazar will not properly update the test matrix when
+    there are packages that conflict between each other. The following syntax
+    is now supported::
+
+        env:
+          - '_BOTO=2.45.0 _DJANGO=1.9 _DJANGO_STORAGES=1.5.1'
+        
+          - '_BOTO3=1.4.3 _DJANGO=1.9 _DJANGO_STORAGES=1.5.1'
+
+    When ``Django 1.10`` is found the matrix is updated as follows::
+
+        env:
+          - '_BOTO=2.45.0 _DJANGO=1.9 _DJANGO_STORAGES=1.5.1'
+          - '_BOTO=2.45.0 _DJANGO=1.10 _DJANGO_STORAGES=1.5.1'
+        
+          - '_BOTO3=1.4.3 _DJANGO=1.9 _DJANGO_STORAGES=1.5.1'
+          - '_BOTO3=1.4.3 _DJANGO=1.10 _DJANGO_STORAGES=1.5.1'
+
+* 0.2.3 (2016-07-28)
+
+  * Add logging to indicate progress and status
+
+* 0.2.2 (2016-05-16)
+
+  * Handle non-ascii characters in data streams
+
+* 0.2.1 (2016-05-15)
+
+  * Initial release
+
+Installation
+============
 
 To install::
 

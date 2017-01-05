@@ -730,10 +730,11 @@ language: python
 env:
   - _PYYAML=3.11
 """)
-        env = strazar.build_travis_env(old_travis, 'PyYAML', '3.11')
-        self.assertEqual(len(env.keys()), 1)
-        self.assertTrue('_PYYAML' in env)
-        self.assertEqual(env['_PYYAML'], set(['3.11']))
+        groups = strazar.build_travis_env(old_travis, 'PyYAML', '3.11')
+        self.assertEqual(len(groups.keys()), 1)
+        self.assertEqual(len(groups[('_PYYAML',)].keys()), 1)
+        self.assertTrue('_PYYAML' in groups[('_PYYAML',)])
+        self.assertEqual(groups[('_PYYAML',)]['_PYYAML'], set(['3.11']))
 
     def test_build_travis_env_new_version_added(self):
         """
@@ -745,10 +746,11 @@ language: python
 env:
   - _PYYAML=3.11
 """)
-        env = strazar.build_travis_env(old_travis, 'PyYAML', '4.11')
-        self.assertEqual(len(env.keys()), 1)
-        self.assertTrue('_PYYAML' in env)
-        self.assertEqual(env['_PYYAML'], set(['3.11', '4.11']))
+        groups = strazar.build_travis_env(old_travis, 'PyYAML', '4.11')
+        self.assertEqual(len(groups.keys()), 1)
+        self.assertEqual(len(groups[('_PYYAML',)].keys()), 1)
+        self.assertTrue('_PYYAML' in groups[('_PYYAML',)])
+        self.assertEqual(groups[('_PYYAML',)]['_PYYAML'], set(['3.11', '4.11']))
 
     def test_build_travis_env_2_older_versions_and_new_version(self):
         """
@@ -761,10 +763,47 @@ env:
   - _PYYAML=3.11
   - _PYYAML=3.12
 """)
-        env = strazar.build_travis_env(old_travis, 'PyYAML', '4.11')
-        self.assertEqual(len(env.keys()), 1)
-        self.assertTrue('_PYYAML' in env)
-        self.assertEqual(env['_PYYAML'], set(['3.11', '3.12', '4.11']))
+        groups = strazar.build_travis_env(old_travis, 'PyYAML', '4.11')
+        self.assertEqual(len(groups.keys()), 1)
+        self.assertEqual(len(groups[('_PYYAML',)].keys()), 1)
+        self.assertTrue('_PYYAML' in groups[('_PYYAML',)])
+        self.assertEqual(groups[('_PYYAML',)]['_PYYAML'], set(['3.11', '3.12', '4.11']))
+
+    def test_calculate_new_travis_env_with_2_self_excluding_packages(self):
+        """
+            GIVEN there are 3 packages in environment
+            AND 2 of them are self-excluding (or conflict between themselves)
+            WHEN a new version is found
+            THEN the resulting ENV includes entries with only the new version
+                of existing package updated
+        """
+        old_travis = yaml.load("""
+language: python
+env:
+  - _DJANGO=1.9 _BOTO=2.45.0
+  - _DJANGO=1.9 _BOTO3=1.4.3
+""")
+        groups = strazar.build_travis_env(old_travis, 'Django', '1.10.5')
+        self.assertEqual(len(groups.keys()), 2)
+        self.assertTrue(('_DJANGO', '_BOTO') in groups)
+        self.assertTrue('_DJANGO' in groups[('_DJANGO', '_BOTO')])
+        self.assertTrue('_BOTO' in groups[('_DJANGO', '_BOTO')])
+        self.assertFalse('_BOTO3' in groups[('_DJANGO', '_BOTO')])
+
+        self.assertTrue(('_DJANGO', '_BOTO3') in groups)
+        self.assertTrue('_DJANGO' in groups[('_DJANGO', '_BOTO3')])
+        self.assertTrue('_BOTO3' in groups[('_DJANGO', '_BOTO3')])
+        self.assertFalse('_BOTO' in groups[('_DJANGO', '_BOTO3')])
+
+        # build the new environment
+        new_env = strazar.calculate_new_travis_env(groups)
+        self.assertEqual(len(new_env), 4)
+        self.assertTrue('_BOTO=2.45.0 _DJANGO=1.9' in new_env)
+        self.assertTrue('_BOTO=2.45.0 _DJANGO=1.10.5' in new_env)
+        self.assertTrue('_BOTO3=1.4.3 _DJANGO=1.9' in new_env)
+        self.assertTrue('_BOTO3=1.4.3 _DJANGO=1.10.5' in new_env)
+        # see https://github.com/atodorov/django-s3-cache/commit/a90906e254771c962272f7548e588d6520aa8143
+        self.assertFalse('_BOTO=2.45.0 _BOTO3=1.4.3' in new_env)
 
     def test_calculate_new_travis_env_2_pkgs_2_vers_each(self):
         """
@@ -776,8 +815,10 @@ env:
                 A=2 B=4
         """
         env_vars = {
-            'A': set([1, 2]),
-            'B': set([3, 4]),
+            ('A', 'B'): {
+                'A': set([1, 2]),
+                'B': set([3, 4]),
+            }
         }
         new_env = strazar.calculate_new_travis_env(env_vars)
         self.assertEqual(len(new_env), 4)
@@ -801,9 +842,11 @@ env:
                 A=2 B=4 C=6
         """
         env_vars = {
-            'A': set([1, 2]),
-            'B': set([3, 4]),
-            'C': set([5, 6]),
+            ('A', 'B', 'C'): {
+                'A': set([1, 2]),
+                'B': set([3, 4]),
+                'C': set([5, 6]),
+            }
         }
         new_env = strazar.calculate_new_travis_env(env_vars)
         self.assertEqual(len(new_env), 8)
