@@ -1,5 +1,6 @@
 #!/bin/bash
 
 flake8 strazar/__init__.py && \
-coverage run --source strazar/ --branch -m unittest discover strazar/ -v && \
+pylint -rn strazar tests/*.py && \
+coverage run --source strazar/ --branch -m unittest discover tests/ -v && \
 coverage report -m

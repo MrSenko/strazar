@@ -1,6 +1,8 @@
+# pylint: disable=missing-docstring,invalid-name
+from __future__ import print_function
+
 import os
 import json
-import yaml
 import base64
 try:
     import httplib
@@ -9,6 +11,8 @@ except ImportError:
 from datetime import datetime
 from itertools import product
 from xml.dom.minidom import parseString
+
+import yaml
 
 
 # todo: this goes away once we port to
@@ -49,7 +53,7 @@ Gecko/20120601 Firefox/10.0.5',
     conn.request(method, path, body=post_data, headers=headers)
     response = conn.getresponse()
 
-    if (response.status == 404):
+    if response.status == 404:
         raise Exception("404 - %s not found" % url)
 
     result = response.read().decode('UTF-8', 'replace')
@@ -102,12 +106,12 @@ def monitor_pypi_rss(config):
 
                         # execute the call back
                         cfg['cb'](**args)
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-except
                         print(e)
                         continue
             else:
                 print("package %s not found in config. continuing ..." % name)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             print(e)
             continue
 
@@ -232,50 +236,51 @@ def update_github(**kwargs):
 
     # step 3: Post your new file to the server
     data = post_url(
-                "/repos/%s/git/blobs" % GITHUB_REPO,
-                {
-                    'content': new_travis,
-                    'encoding': 'utf-8'
-                }
-            )
+        "/repos/%s/git/blobs" % GITHUB_REPO,
+        {
+            'content': new_travis,
+            'encoding': 'utf-8'
+        }
+    )
     HEAD['UPDATE'] = {'sha': data['sha']}
 
     # step 5: Create a tree containing your new file
     data = post_url(
-                "/repos/%s/git/trees" % GITHUB_REPO,
-                {
-                    "base_tree": HEAD['tree']['sha'],
-                    "tree": [{
-                        "path": GITHUB_FILE,
-                        "mode": "100644",
-                        "type": "blob",
-                        "sha": HEAD['UPDATE']['sha']
-                    }]
-                }
-            )
+        "/repos/%s/git/trees" % GITHUB_REPO,
+        {
+            "base_tree": HEAD['tree']['sha'],
+            "tree": [{
+                "path": GITHUB_FILE,
+                "mode": "100644",
+                "type": "blob",
+                "sha": HEAD['UPDATE']['sha']
+            }]
+        }
+    )
     HEAD['UPDATE']['tree'] = {'sha': data['sha']}
 
     # step 6: Create a new commit
     data = post_url(
-                "/repos/%s/git/commits" % GITHUB_REPO,
-                {
-                    "message": "New upstream dependency found! \
+        "/repos/%s/git/commits" % GITHUB_REPO,
+        {
+            "message": "New upstream dependency found! \
 Auto update %s" % GITHUB_FILE,
-                    "parents": [HEAD['commit']['sha']],
-                    "tree": HEAD['UPDATE']['tree']['sha']
-                }
-            )
+            "parents": [HEAD['commit']['sha']],
+            "tree": HEAD['UPDATE']['tree']['sha']
+            }
+    )
     HEAD['UPDATE']['commit'] = {'sha': data['sha']}
 
     # step 7: Update HEAD, but don't force it!
     data = post_url(
-                "/repos/%s/git/refs/heads/%s" % (GITHUB_REPO, GITHUB_BRANCH),
-                {
-                    "sha": HEAD['UPDATE']['commit']['sha']
-                }
-            )
+        "/repos/%s/git/refs/heads/%s" % (GITHUB_REPO, GITHUB_BRANCH),
+        {
+            "sha": HEAD['UPDATE']['commit']['sha']
+        }
+    )
 
     if 'object' in data:  # PASS
         return True
-    else:  # FAIL
-        return data['message']
+
+    # FAIL
+    return data['message']

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import sys
 from setuptools import setup, find_packages
 
 with open('README.rst') as file:

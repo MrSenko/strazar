@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=invalid-name,line-too-long,missing-docstring,no-member
 
 import os
-import yaml
-import strazar
 import unittest
 try:
     import unittest.mock as mock
 except ImportError:
     import mock
 from datetime import datetime
+
+import yaml
+import strazar
+
 
 _url_mock_values = {
     False: {
@@ -34,12 +37,11 @@ _url_mock_values = {
                 {
                     "path": ".gitignore",
                     "url": "/repos/MrSenko/strazar/git/blobs/004a8d7a778d7fda2a8f409d72ba517cb8325fa3"
-                },
-                {
+                }, {
                     "path": ".travis.yml",
                     "url": "/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89"
                 }
-              ],
+            ],
         },
         '/repos/MrSenko/strazar/git/blobs/c7a421dc1d3d7124e21a49dfcfac9be3e926cd89': {
             "content": "bGFuZ3VhZ2U6IHB5dGhvbgpweXRob246CiAgLSAyLjcKICAtIDMuNQppbnN0YWxsOgogIC0gcGlwIGluc3RhbGwgY292ZXJhZ2UgZmxha2U4IG1vY2sgUHlZQU1MPT0kX1BZWUFNTCBQeUdpdGh1Yj09JF9QWUdJVEhVQgpzY3JpcHQ6CiAgLSAuL3Rlc3Quc2gKZW52OgogIC0gX1BZR0lUSFVCPTEuMjYuMCBfUFlZQU1MPTMuMTEK",
@@ -98,12 +100,12 @@ class StrazarGitHubTestCase(unittest.TestCase):
             AND change is pushed to GitHub
         """
         kwargs = {
-                'GITHUB_REPO' : 'MrSenko/strazar',
-                'GITHUB_BRANCH' : 'master',
-                'GITHUB_FILE' : '.travis.yml',
-                'name': 'PyYAML',
-                'version': '3.12',
-                'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
+            'GITHUB_REPO' : 'MrSenko/strazar',
+            'GITHUB_BRANCH' : 'master',
+            'GITHUB_FILE' : '.travis.yml',
+            'name': 'PyYAML',
+            'version': '3.12',
+            'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
         }
 
         _orig_get_url = strazar.get_url
@@ -121,7 +123,7 @@ class StrazarGitHubTestCase(unittest.TestCase):
             WHEN GitHub returns an error on push
             THEN it is handled correctly
         """
-        def _return_values(*args, **kwargs):
+        def _return_values(*args):
             url = list(args)[0]
             try:
                 post_data = list(args)[1]
@@ -129,18 +131,17 @@ class StrazarGitHubTestCase(unittest.TestCase):
                 post_data = None
             if post_data and url == '/repos/MrSenko/strazar/git/refs/heads/master':
                 return {
-                        "message": "Push to GitHub failed",
-                    }
-            else:
-                return _get_url_mock(*args)
+                    "message": "Push to GitHub failed",
+                }
+            return _get_url_mock(url, post_data)
 
         kwargs = {
-                'GITHUB_REPO' : 'MrSenko/strazar',
-                'GITHUB_BRANCH' : 'master',
-                'GITHUB_FILE' : '.travis.yml',
-                'name': 'PyYAML',
-                'version': '3.12',
-                'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
+            'GITHUB_REPO' : 'MrSenko/strazar',
+            'GITHUB_BRANCH' : 'master',
+            'GITHUB_FILE' : '.travis.yml',
+            'name': 'PyYAML',
+            'version': '3.12',
+            'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
         }
 
         _orig_get_url = strazar.get_url
@@ -148,8 +149,8 @@ class StrazarGitHubTestCase(unittest.TestCase):
         os.environ['GITHUB_TOKEN'] = 'testing'
         try:
             ret = strazar.update_github(**kwargs)
-            self.assertNotEquals(ret, True)
-            self.assertEquals(ret, "Push to GitHub failed")
+            self.assertNotEqual(ret, True)
+            self.assertEqual(ret, "Push to GitHub failed")
         finally:
             strazar.get_url = _orig_get_url
             del os.environ['GITHUB_TOKEN']
@@ -162,12 +163,12 @@ class StrazarGitHubTestCase(unittest.TestCase):
             AND no git write operations were performed
         """
         kwargs = {
-                'GITHUB_REPO' : 'MrSenko/strazar',
-                'GITHUB_BRANCH' : 'master',
-                'GITHUB_FILE' : '.travis.yml',
-                'name': 'PyYAML',
-                'version': '3.11',
-                'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
+            'GITHUB_REPO' : 'MrSenko/strazar',
+            'GITHUB_BRANCH' : 'master',
+            'GITHUB_FILE' : '.travis.yml',
+            'name': 'PyYAML',
+            'version': '3.11',
+            'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
         }
 
         _orig_get_url = strazar.get_url
@@ -192,24 +193,23 @@ class StrazarGitHubTestCase(unittest.TestCase):
             WHEN we call update_github()
             THEN exception is Raised
         """
-        def _return_values(*args, **kwargs):
+        def _return_values(*args):
             url = list(args)[0]
 
             if url == '/repos/MrSenko/strazar/git/trees/175b571e84ae67a54a3fb46ae0be9ccc39c8efb6':
                 return {
-                        "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
-                        "tree": [],
-                    }
-            else:
-                return _get_url_mock(*args)
+                    "sha": "175b571e84ae67a54a3fb46ae0be9ccc39c8efb6",
+                    "tree": [],
+                }
+            return _get_url_mock(url)
 
         kwargs = {
-                'GITHUB_REPO' : 'MrSenko/strazar',
-                'GITHUB_BRANCH' : 'master',
-                'GITHUB_FILE' : '.travis.yml',
-                'name': 'PyYAML',
-                'version': '3.11',
-                'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
+            'GITHUB_REPO' : 'MrSenko/strazar',
+            'GITHUB_BRANCH' : 'master',
+            'GITHUB_FILE' : '.travis.yml',
+            'name': 'PyYAML',
+            'version': '3.11',
+            'released_on': datetime.strptime('12 May 2016 21:45:18 GMT', '%d %b %Y %H:%M:%S GMT'),
         }
 
         _orig_get_url = strazar.get_url
@@ -232,6 +232,7 @@ class StrazarPypiMonitorTestCase(unittest.TestCase):
         Tests for monitor_pypi_rss()
     """
 
+    # pylint: disable=no-self-use
     def test_pkg_from_config_not_in_rss(self):
         """
             WHEN the package(s) we're looking for are not in the RSS feed
@@ -274,6 +275,7 @@ class StrazarPypiMonitorTestCase(unittest.TestCase):
             strazar.get_url = _orig_get_url
         _test_callback.assert_not_called()
 
+    # pylint: disable=no-self-use
     def test_pkg_from_config_in_rss(self):
         """
             WHEN the package(s) we're looking for are in the RSS feed
@@ -335,6 +337,7 @@ class StrazarPypiMonitorTestCase(unittest.TestCase):
         # assert we've been called twice
         _test_callback.assert_has_calls(call_list)
 
+    # pylint: disable=no-self-use
     def test_pkg_in_rss_and_callback_raises_exception(self):
         """
             WHEN the package(s) we're looking for are in the RSS feed
@@ -380,7 +383,7 @@ class StrazarPypiMonitorTestCase(unittest.TestCase):
         try:
             try:
                 strazar.monitor_pypi_rss(config)
-            except:
+            except:  # pylint: disable=bare-except
                 self.fail('monitor_pypi_rss() did not catch internal exception!')
         finally:
             strazar.get_url = _orig_get_url
@@ -434,7 +437,7 @@ class StrazarPypiMonitorTestCase(unittest.TestCase):
         try:
             try:
                 strazar.monitor_pypi_rss(config)
-            except:
+            except:  # pylint: disable=bare-except
                 self.fail('monitor_pypi_rss() did not catch internal exception!')
         finally:
             strazar.get_url = _orig_get_url
@@ -728,9 +731,9 @@ env:
   - _PYYAML=3.11
 """)
         env = strazar.build_travis_env(old_travis, 'PyYAML', '3.11')
-        self.assertEquals(len(env.keys()), 1)
+        self.assertEqual(len(env.keys()), 1)
         self.assertTrue('_PYYAML' in env)
-        self.assertEquals(env['_PYYAML'], set(['3.11']))
+        self.assertEqual(env['_PYYAML'], set(['3.11']))
 
     def test_build_travis_env_new_version_added(self):
         """
@@ -743,9 +746,9 @@ env:
   - _PYYAML=3.11
 """)
         env = strazar.build_travis_env(old_travis, 'PyYAML', '4.11')
-        self.assertEquals(len(env.keys()), 1)
+        self.assertEqual(len(env.keys()), 1)
         self.assertTrue('_PYYAML' in env)
-        self.assertEquals(env['_PYYAML'], set(['3.11', '4.11']))
+        self.assertEqual(env['_PYYAML'], set(['3.11', '4.11']))
 
     def test_build_travis_env_2_older_versions_and_new_version(self):
         """
@@ -759,9 +762,9 @@ env:
   - _PYYAML=3.12
 """)
         env = strazar.build_travis_env(old_travis, 'PyYAML', '4.11')
-        self.assertEquals(len(env.keys()), 1)
+        self.assertEqual(len(env.keys()), 1)
         self.assertTrue('_PYYAML' in env)
-        self.assertEquals(env['_PYYAML'], set(['3.11', '3.12', '4.11']))
+        self.assertEqual(env['_PYYAML'], set(['3.11', '3.12', '4.11']))
 
     def test_calculate_new_travis_env_2_pkgs_2_vers_each(self):
         """
@@ -777,7 +780,7 @@ env:
             'B': set([3, 4]),
         }
         new_env = strazar.calculate_new_travis_env(env_vars)
-        self.assertEquals(len(new_env), 4)
+        self.assertEqual(len(new_env), 4)
         self.assertTrue('A=1 B=3' in new_env)
         self.assertTrue('A=1 B=4' in new_env)
         self.assertTrue('A=2 B=3' in new_env)
@@ -803,7 +806,7 @@ env:
             'C': set([5, 6]),
         }
         new_env = strazar.calculate_new_travis_env(env_vars)
-        self.assertEquals(len(new_env), 8)
+        self.assertEqual(len(new_env), 8)
         self.assertTrue('A=1 B=3 C=5' in new_env)
         self.assertTrue('A=1 B=3 C=6' in new_env)
         self.assertTrue('A=1 B=4 C=5' in new_env)
@@ -825,7 +828,7 @@ env:
 language: python
 """)
         new_travis = strazar.update_travis(old_travis, 'PyYAML', '3.11')
-        self.assertEquals(new_travis, old_travis)
+        self.assertEqual(new_travis, old_travis)
 
 
     def test_update_travis_no_new_version_but_different_sort(self):
@@ -839,9 +842,9 @@ env:
   - _PYYAML=3.11 _PYGITHUB=1.26.0
 """)
         new_travis = strazar.update_travis(old_travis, 'PyYAML', '3.11')
-        self.assertNotEquals(new_travis, old_travis)
+        self.assertNotEqual(new_travis, old_travis)
         # note: the order has been changed due to sorting
-        self.assertEquals(new_travis['env'], ['_PYGITHUB=1.26.0 _PYYAML=3.11'])
+        self.assertEqual(new_travis['env'], ['_PYGITHUB=1.26.0 _PYYAML=3.11'])
 
 
     def test_update_travis_1_pkg_new_version(self):
@@ -862,7 +865,7 @@ env:
 language: python
 """)
         new_travis = strazar.update_travis(old_travis, 'PyYAML', '3.12')
-        self.assertEquals(new_travis, expected_travis)
+        self.assertEqual(new_travis, expected_travis)
 
     def test_update_travis_2_pkgs_new_version(self):
         """
@@ -883,4 +886,4 @@ env:
 language: python
 """)
         new_travis = strazar.update_travis(old_travis, 'PyYAML', '3.12')
-        self.assertEquals(new_travis, expected_travis)
+        self.assertEqual(new_travis, expected_travis)
