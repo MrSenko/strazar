@@ -1,3 +1,12 @@
+env:
+- _PYGITHUB=1.26.0 _PYYAML=3.11
+- !!python/unicode '_PYGITHUB=1.26.0 _PYYAML=3.12'
+- !!python/unicode '_PYGITHUB=1.27.1 _PYYAML=3.11'
+- !!python/unicode '_PYGITHUB=1.27.1 _PYYAML=3.12'
+- !!python/unicode '_PYGITHUB=1.29 _PYYAML=3.11'
+- !!python/unicode '_PYGITHUB=1.29 _PYYAML=3.12'
+install:
+- pip install coverage flake8 mock PyYAML==$_PYYAML PyGithub==$_PYGITHUB
 language: python
 python:
   - 2.7
@@ -6,6 +15,4 @@ install:
   - pip install coverage flake8 mock PyYAML==$_PYYAML PyGithub==$_PYGITHUB
   - pip install https://github.com/PyCQA/astroid/zipball/master https://github.com/PyCQA/pylint/zipball/master
 script:
-  - ./test.sh
-env:
-  - _PYGITHUB=1.26.0 _PYYAML=3.11
+- ./test.sh
