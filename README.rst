@@ -17,7 +17,7 @@ acts as a trigger for new builds!
 Changelog
 =========
 
-* master
+* 0.2.4 (2017-01-05)
 
   * Use the new package name and version in commit log;
 
