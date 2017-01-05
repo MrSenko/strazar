@@ -285,8 +285,8 @@ def update_github(**kwargs):
     data = post_url(
         "/repos/%s/git/commits" % GITHUB_REPO,
         {
-            "message": "New upstream dependency found! \
-Auto update %s" % GITHUB_FILE,
+            "message": "New dependency %s %s found! \
+Auto update %s" % (kwargs.get('name'), kwargs.get('version'), GITHUB_FILE),
             "parents": [HEAD['commit']['sha']],
             "tree": HEAD['UPDATE']['tree']['sha']
             }

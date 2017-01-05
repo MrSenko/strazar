@@ -19,6 +19,8 @@ Changelog
 
 * master
 
+  * Use the new package name and version in commit log;
+
   * Fix a bug where Strazar will not properly update the test matrix when
     there are packages that conflict between each other. The following syntax
     is now supported::
