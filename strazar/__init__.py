@@ -141,7 +141,8 @@ def build_travis_env(travis, package, new_version):
 
     # add the new version to the list
     new_pkg_name = '_' + package.upper().replace('-', '_')
-    pkg_versions[new_pkg_name].add(new_version)
+    if new_pkg_name in pkg_versions:
+        pkg_versions[new_pkg_name].add(new_version)
 
     # for each group of packages, assign the versions which
     # apply to it

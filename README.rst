@@ -17,6 +17,13 @@ acts as a trigger for new builds!
 Changelog
 =========
 
+* 0.2.5 (2017-01-11)
+
+  * Don't crash if Strazar is monitoring a package which
+    is not currently in ``.travis.yml``. This can happen when your software
+    switches dependencies, e.g. from ``boto`` to ``boto3`` but you still
+    like to keep the monitoring configuration for the previous dependency.
+
 * 0.2.4 (2017-01-05)
 
   * Use the new package name and version in commit log;

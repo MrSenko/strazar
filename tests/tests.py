@@ -859,6 +859,20 @@ env:
         self.assertTrue('A=2 B=4 C=5' in new_env)
         self.assertTrue('A=2 B=4 C=6' in new_env)
 
+    def test_dont_update_travis_when_new_version_for_another_package(self):
+        """
+            WHEN there is a new version for a package
+            AND package IS NOT included in yaml
+            THEN .travis.yml should not change
+        """
+        old_travis = yaml.load("""
+env:
+- _PYYAML=3.11
+language: python
+""")
+        new_travis = strazar.update_travis(old_travis, 'Django', '1.10')
+        self.assertEqual(new_travis, old_travis)
+
 
     def test_update_travis_no_new_version(self):
         """
