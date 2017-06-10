@@ -17,9 +17,10 @@ acts as a trigger for new builds!
 Changelog
 =========
 
-* 0.2.6 (2017-06-11)
+* 0.2.7 (2017-06-11)
 
-  * Log when a newly added package is found in config.
+  * Log when a newly added package is found in config;
+  * Better exception logging.
 
 
 * 0.2.5 (2017-01-11)

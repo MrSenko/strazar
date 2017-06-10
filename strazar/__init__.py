@@ -95,7 +95,7 @@ def monitor_pypi_rss(config):
                                             '%d %b %Y %H:%M:%S GMT')
 
             if name in config.keys():
-                print("package %s found in config ..." % name)
+                print("package %s was found in config ..." % name)
 
                 for cfg in config[name]:
                     try:
@@ -114,7 +114,7 @@ def monitor_pypi_rss(config):
             else:
                 print("package %s not found in config. continuing ..." % name)
         except Exception as e:  # pylint: disable=broad-except
-            print(e)
+            print(e.message)
             continue
 
 
