@@ -17,6 +17,11 @@ acts as a trigger for new builds!
 Changelog
 =========
 
+* 0.2.6 (2017-06-11)
+
+  * Log when a newly added package is found in config.
+
+
 * 0.2.5 (2017-01-11)
 
   * Don't crash if Strazar is monitoring a package which
