@@ -114,7 +114,8 @@ def monitor_pypi_rss(config):
             else:
                 print("package %s not found in config. continuing ..." % name)
         except Exception as e:  # pylint: disable=broad-except
-            print(e.message)
+            print("ERROR when processing %s" % name)
+            print(e)
             continue
 
 
