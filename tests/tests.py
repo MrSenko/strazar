@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=invalid-name,line-too-long,missing-docstring,no-member
+# workaround for https://github.com/PyCQA/pylint/issues/1609
+#pylint: disable=unused-variable
 
 import os
 import unittest
