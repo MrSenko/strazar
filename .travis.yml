@@ -1,6 +1,7 @@
 env:
 - _PYGITHUB=1.36 _PYYAML=3.12
 - _PYGITHUB=1.38 _PYYAML=3.12
+- _PYGITHUB=1.39 _PYYAML=3.12
 install:
 - pip install coverage flake8 mock PyYAML==$_PYYAML PyGithub==$_PYGITHUB
 - pip install pylint
